@@ -19,13 +19,17 @@ const app = express();
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
-// CORS configuration for mobile app access
+
+// CORS configuration for frontend at http://localhost:5173
 const corsOptions = {
-  origin: (process.env.CORS_ORIGIN || 'http://localhost:3000').split(','),
+  origin: (process.env.CORS_ORIGIN || 'http://localhost:5173').split(','),
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   optionsSuccessStatus: 200,
 };
 app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 // Request logging middleware (simple console logging)
 app.use((req, res, next) => {
@@ -49,11 +53,19 @@ app.get('/health', (req, res) => {
  * API Routes
  */
 
-// Import authentication routes
+// Import routes
 const authRoutes = require('./modules/auth/auth.routes');
+const projectRoutes = require('./modules/project/project.routes');
+const taskRoutes = require('./modules/task/task.routes');
+const taskStandaloneRoutes = require('./modules/task/task.standalone.routes');
+const userRoutes = require('./modules/user/user.routes');
 
 // Mount routes
 app.use('/api/auth', authRoutes);
+app.use('/api/projects', projectRoutes);
+app.use('/api/projects/:projectId/tasks', taskRoutes);
+app.use('/api/tasks', taskStandaloneRoutes);
+app.use('/api/users', userRoutes);
 
 /**
  * 404 Not Found Handler
